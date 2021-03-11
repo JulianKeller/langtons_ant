@@ -9,7 +9,7 @@
 #define CS_PIN    3       // Control pin to communicate with display
 #define DEBUG 0
 
-// potentiometer 
+// potentiometer
 #define POT A2
 
 // display dimensions
@@ -19,12 +19,23 @@
 // Define max iterations
 #define MAX_ITERATIONS 10
 
+// define directions
+#define N 1
+#define E 2
+#define S 3
+#define W 4
+
+
 int hasChanged = 1;
 int iterations = 0;
 int previousSum = 0;
 int sum_count = 0;
 int average = 0;
 int previousAverage = 0;
+
+int ant_x = 16;
+int ant_y = 4;
+int dir = E;
 
 
 int one = 0;
@@ -35,10 +46,10 @@ int three = 0;
 int board[MAX_Y][MAX_X] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-  {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-  {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-  {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
@@ -56,90 +67,93 @@ void setup() {
 
   //  initBoard(board, 1);
   //  random_init_board(board, 10);
+  board[ant_y][ant_x] == 1;
 }
 
 
 void loop() {
   // enable this to control speed with pot
-  int val = analogRead(POT);
-//  Serial.println(val);
-//  delay(val);
+  //  int val = analogRead(POT);
+  //  Serial.println(val);
+  //  delay(val);
 
   // enable for hard coded speed
-  delay(80);
+  delay(1000);
   //  printBoard();
   displayBoard();
-  gameOfLife();
+  langtonsAnt();
 
 }
 
 
-void gameOfLife() {
+void langtonsAnt() {
 
-  iterations++;
-  int sum = sumBoard();
-  // update board if it gets stuck in the same 3 iterations over and over
-  average += sum;
-  if (iterations >= 100) {
-    iterations = 0;
-    average = average / 100;
-    if (average == previousAverage) {
-      resetBoard();
+  printant(ant_y, ant_x);
+
+  // white cell
+  if (board[ant_y][ant_x] == 0) {
+    // change color of cell
+    board[ant_y][ant_x] = 1;
+    // determine next direction --> turn 90 degrees counter clockwise and move forward
+    // TODO check next direction is in bounds as well.
+    switch (dir) {
+      case N:
+        dir = W;
+        ant_x--;
+        //        Serial.println("white west");
+        break;
+      case E:
+        dir = N;
+        ant_y++;
+        //        Serial.println("white north");
+        break;
+      case S:
+        dir = E;
+        ant_x++;
+        //        Serial.println("white east");
+        break;
+      case W:
+        dir = S;
+        ant_y++;
+        //        Serial.println("white south");
+        break;
     }
-    previousAverage = average;
+    // TODO rules for hitting the walls
   }
-
-
-  // update board if it gets stuck
-  if (sum == previousSum) {
-    sum_count++;
-  }
-  previousSum = sum;
-
-
-  // if the board has not changed, set random points until it changes
-  if (sum_count >= MAX_ITERATIONS) {
-    resetBoard();
-  }
-
-  // create a new board
-  int nextBoard[MAX_Y][MAX_X] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-  };
-
-
-  int count = 0;
-  // calculate the state of the next board
-  //  Serial.println("printing neighbor count");
-  for (int y = 0; y < MAX_Y; y++) {
-    for (int x = 0; x < MAX_X; x++) {
-      //      count = my_count_neighbors(y, x);
-      count = getNeighbors(y, x);
-      
-      // Any live cell with two or three live neighbours survives
-      if (board[y][x] == 1 && (count == 2 || count == 3)) {
-        nextBoard[y][x] = 1;
-      }
-      // Any dead cell with three live neighbours becomes a live cell.
-      else if (board[y][x] == 0 && (count == 3)) {
-        nextBoard[y][x] = 1;
-      }
-      
-      // All other live cells die in the next generation. Similarly, all other dead cells stay dead.
-      else {
-        nextBoard[y][x] = 0;
-      }
+  // black cell
+  //  else if (board[ant_y][ant_x] == 1) {
+  else {
+    // change color of cell
+    board[ant_y][ant_x] = 0;
+    // determine next direction --> turn 90 degrees counter clockwise and move forward
+    // TODO check next direction is in bounds as well.
+    switch (dir) {
+      case N:
+        dir = E;
+        ant_x++;
+        //        Serial.println("black east");
+        break;
+      case E:
+        dir = S;
+        ant_y--;
+        //        Serial.println("black south");
+        break;
+      case S:
+        dir = W;
+        ant_x--;
+        //        Serial.println("black west");
+        break;
+      case W:
+        dir = N;
+        ant_y++;
+        //        Serial.println("black north");
+        break;
     }
+    // TODO rules for hitting the walls
   }
+
   // update the board
-  copyBoard(nextBoard, board);
+  //  copyBoard(nextBoard, board);
 }
 
 // copy the src board to the destination board
@@ -288,7 +302,7 @@ void set_random_point_near_neighbor(int state, int repeat) {
   int points = 4;
 
   int sum = sumBoard();
-  
+
   // set a couple of random points if board is empty
   if (sum == 0) {
     for (int i = 0; i < points; i++) {
@@ -340,6 +354,15 @@ void printit(char* str, int value) {
     Serial.print(str);
     Serial.print(value);
   }
+}
+
+void printant(int y, int x) {
+  Serial.print(y);
+  Serial.print(":");
+  Serial.print(x);
+  Serial.print(" = ");
+  Serial.println(board[y][x]);
+
 }
 
 // debug board
