@@ -17,7 +17,7 @@
 #define MAX_X 32
 
 // Define max iterations
-#define MAX_ITERATIONS 10
+#define MAX_ITERATIONS 30000
 
 // define directions
 #define N 1
@@ -33,17 +33,25 @@ int sum_count = 0;
 int average = 0;
 int previousAverage = 0;
 
+// Initialize starting position
 int ant_x = 16;
 int ant_y = 4;
 int dir = E;
 
 
-int one = 0;
-int two = 0;
-int three = 0;
-
 // init game board so we can easily input a starting pattern
 int board[MAX_Y][MAX_X] = {
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+};
+
+int board_aux[MAX_Y][MAX_X] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -65,30 +73,31 @@ void setup() {
   // get noise as long as analog 1 is not in use
   randomSeed(analogRead(1));
 
-  //  initBoard(board, 1);
-  //  random_init_board(board, 10);
-  board[ant_y][ant_x] == 1;
+  init_langtons_ant();
+
 }
 
 
 void loop() {
-  // enable this to control speed with pot
-  //  int val = analogRead(POT);
-  //  Serial.println(val);
-  //  delay(val);
 
   // enable for hard coded speed
-  delay(100);
-  //  printBoard();
-  displayBoard();
+  delay(80);
+  displayBoard(board);
   langtonsAnt();
+
+  // reset at max iterations
+  if (iterations++ >= MAX_ITERATIONS) {
+    init_langtons_ant();
+    iterations = 0;
+  }
+  //  Serial.println(iterations);
+
 
 }
 
 
 void langtonsAnt() {
 
-  printant(ant_y, ant_x);
   int current_x = ant_x;
   int current_y = ant_y;
 
@@ -112,7 +121,7 @@ void langtonsAnt() {
 
         case E:
           dir = N;
-          if (ant_y + 1>= MAX_Y) {
+          if (ant_y + 1 >= MAX_Y) {
             dir = W;
           }
           else {
@@ -144,7 +153,6 @@ void langtonsAnt() {
   }
 
   // black cell
-  //  else if (board[ant_y][ant_x] == 1) {
   else {
     // change color of cell
     board[ant_y][ant_x] = 0;
@@ -191,6 +199,34 @@ void langtonsAnt() {
   }
 
 
+}
+
+
+// initialize the game board, the ant starting position, and starting direction
+void init_langtons_ant() {
+  random_init_board(board, 8);
+
+  // get random starting x and y
+  ant_y = random(0, MAX_Y);
+  ant_x = random(0, MAX_X);
+
+  // get random starting direction
+  dir = random(1, 4);
+
+  flashBoard(3);
+}
+
+
+// flash board on and off number of times
+void flashBoard(int times) {
+  int delay_time = 500;
+  for (int i = 0; i < times; i++) {
+    // clear the board with a flash
+    displayBoard(board_aux);
+    delay(delay_time);
+    displayBoard(board);
+    delay(delay_time);
+  }
 }
 
 
@@ -256,10 +292,10 @@ int getNeighbors(int y, int x) {
   return count;
 }
 
-void displayBoard() {
+void displayBoard(int the_board[MAX_Y][MAX_X]) {
   for (int y = 0; y < MAX_Y; y++) {
     for (int x = 0; x < MAX_X; x++) {
-      mx.setPoint(y, x, board[y][x]);
+      mx.setPoint(y, x, the_board[y][x]);
     }
   }
 }
@@ -287,10 +323,10 @@ void resetBoard() {
   //  // clear the board with a flash
   ////    initBoard(board, 1);
   //    setBoardOutline(board);
-  //    displayBoard();
+  //    displayBoard(board);
   //    delay(100);
   //    initBoard(board, 0);
-  //    displayBoard();
+  //    displayBoard(board);
 
   // reset the board with 100 random points
   //  for (int i = 0; i < 10; i++) randomDisplay();
