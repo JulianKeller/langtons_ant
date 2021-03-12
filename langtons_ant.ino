@@ -78,7 +78,7 @@ void loop() {
   //  delay(val);
 
   // enable for hard coded speed
-  delay(1000);
+  delay(100);
   //  printBoard();
   displayBoard();
   langtonsAnt();
@@ -89,72 +89,111 @@ void loop() {
 void langtonsAnt() {
 
   printant(ant_y, ant_x);
+  int current_x = ant_x;
+  int current_y = ant_y;
 
   // white cell
   if (board[ant_y][ant_x] == 0) {
     // change color of cell
     board[ant_y][ant_x] = 1;
+
     // determine next direction --> turn 90 degrees counter clockwise and move forward
-    // TODO check next direction is in bounds as well.
-    switch (dir) {
-      case N:
-        dir = W;
-        ant_x--;
-        //        Serial.println("white west");
-        break;
-      case E:
-        dir = N;
-        ant_y++;
-        //        Serial.println("white north");
-        break;
-      case S:
-        dir = E;
-        ant_x++;
-        //        Serial.println("white east");
-        break;
-      case W:
-        dir = S;
-        ant_y++;
-        //        Serial.println("white south");
-        break;
+    while (ant_x == current_x && ant_y == current_y) {
+      switch (dir) {
+        case N:
+          dir = W;
+          if (ant_x - 1 < 0) {
+            dir = S;
+          }
+          else {
+            ant_x--;
+          }
+          break;
+
+        case E:
+          dir = N;
+          if (ant_y + 1>= MAX_Y) {
+            dir = W;
+          }
+          else {
+            ant_y++;
+          }
+          break;
+
+        case S:
+          dir = E;
+          if (ant_x + 1 >= MAX_X) {
+            dir = N;
+          }
+          else {
+            ant_x++;
+          }
+          break;
+
+        case W:
+          dir = S;
+          if (ant_y - 1 < 0) {
+            dir = E;
+          }
+          else {
+            ant_y--;
+          }
+          break;
+      }
     }
-    // TODO rules for hitting the walls
   }
+
   // black cell
   //  else if (board[ant_y][ant_x] == 1) {
   else {
     // change color of cell
     board[ant_y][ant_x] = 0;
     // determine next direction --> turn 90 degrees counter clockwise and move forward
-    // TODO check next direction is in bounds as well.
     switch (dir) {
       case N:
         dir = E;
-        ant_x++;
-        //        Serial.println("black east");
+        if (ant_x + 1 >= MAX_X) {
+          dir = S;
+        }
+        else {
+          ant_x++;
+        }
         break;
       case E:
         dir = S;
-        ant_y--;
-        //        Serial.println("black south");
+        if (ant_y - 1 < 0) {
+          dir = W;
+        }
+        else {
+          ant_y--;
+        }
         break;
       case S:
         dir = W;
-        ant_x--;
-        //        Serial.println("black west");
+        if (ant_x - 1 < 0) {
+          dir = N;
+        }
+        else {
+          ant_x--;
+        }
         break;
       case W:
         dir = N;
-        ant_y++;
-        //        Serial.println("black north");
+        if (ant_y + 1 >= MAX_Y) {
+          dir = E;
+        }
+        else {
+          ant_y++;
+        }
         break;
     }
-    // TODO rules for hitting the walls
+
   }
 
-  // update the board
-  //  copyBoard(nextBoard, board);
+
 }
+
+
 
 // copy the src board to the destination board
 void copyBoard(int src[MAX_Y][MAX_X], int dest[MAX_Y][MAX_X]) {
