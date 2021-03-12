@@ -81,7 +81,7 @@ void setup() {
 void loop() {
 
   // enable for hard coded speed
-  delay(80);
+  delay(50);
   displayBoard(board);
   langtonsAnt();
 
